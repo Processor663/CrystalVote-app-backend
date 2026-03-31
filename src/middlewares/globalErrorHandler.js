@@ -1,105 +1,167 @@
+
 // middlewares/globalErrorHandler.js
-const AppError = require("../utils/AppError");
-const { StatusCodes } = require("http-status-codes");
-require("dotenv").config();
-const logger = require("../config/logger"); // Winston logger
+import { StatusCodes } from "http-status-codes";
+import Prisma  from "../utils/prisma.js";
+import AppError from "../utils/AppError.js";
+import logger from "../config/logger.js";
 
+// ------------------- PRISMA ERROR HANDLERS -------------------
 
-// ------------------- DATABASE ERROR HANDLERS -------------------
-
-// Invalid MongoDB ObjectId
-const handleDBCastError = (err) =>
-  new AppError(`Invalid ${err.path}: ${err.value}`, StatusCodes.BAD_REQUEST);
-
-// Duplicate field error
-const handleDBDuplicateFields = (err) => {
-  const value = Object.values(err.keyValue).join(", ");
+// Unique constraint violation 
+const handlePrismaUniqueConstraint = (err) => {
+  const fields = err.meta?.target?.join(", ") ?? "field";
   return new AppError(
-    `Duplicate field value: ${value}. Please use another value!`,
-    StatusCodes.BAD_REQUEST,
+    `Duplicate value on: ${fields}. Please use another value.`,
+    StatusCodes.CONFLICT
   );
 };
 
-// Mongoose validation error
-const handleDBValidationError = (err) => {
-  const errors = Object.values(err.errors).map((el) => el.message);
+// Record not found 
+const handlePrismaNotFound = (err) => {
+  const model = err.meta?.modelName ?? "Record";
+  return new AppError(`${model} not found.`, StatusCodes.NOT_FOUND);
+};
+
+// Foreign key constraint violation
+const handlePrismaForeignKeyConstraint = (err) => {
+  const field = err.meta?.field_name ?? "related record";
   return new AppError(
-    `Invalid input data: ${errors.join(". ")}`,
-    StatusCodes.BAD_REQUEST,
+    `Related ${field} does not exist.`,
+    StatusCodes.BAD_REQUEST
   );
 };
 
-// ------------------- JWT ERROR HANDLERS -------------------
-
-const handleJWTError = () =>
-  new AppError("Invalid token. Please log in again!", StatusCodes.UNAUTHORIZED);
-
-const handleJWTExpiredError = () =>
+// Required field missing or type mismatch
+const handlePrismaValidationError = () =>
   new AppError(
-    "Your token has expired! Please log in again.",
-    StatusCodes.UNAUTHORIZED,
+    "Invalid input data. Please check your request.",
+    StatusCodes.BAD_REQUEST
   );
+
+// Database connection failure
+const handlePrismaInitializationError = () =>
+  new AppError(
+    "Unable to connect to the database. Please try again later.",
+    StatusCodes.SERVICE_UNAVAILABLE
+  );
+
+// Map Prisma known error codes to handlers
+const handlePrismaKnownError = (err) => {
+  switch (err.code) {
+    case "P2002":
+      return handlePrismaUniqueConstraint(err);
+    case "P2025":
+      return handlePrismaNotFound(err);
+    case "P2003":
+      return handlePrismaForeignKeyConstraint(err);
+    case "P2000": // Value too long for column
+    case "P2005": // Invalid value for field type
+    case "P2006": // Invalid value for field
+      return handlePrismaValidationError();
+    default:
+      return new AppError(
+        "A database error occurred. Please try again.",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+  }
+};
+
+// ------------------- BETTER AUTH ERROR HANDLERS -------------------
+
+const handleBetterAuthError = (err) => {
+  const message = err.message ?? "Authentication error.";
+
+  const statusMap = {
+    UNAUTHORIZED: StatusCodes.UNAUTHORIZED,
+    FORBIDDEN: StatusCodes.FORBIDDEN,
+    USER_NOT_FOUND: StatusCodes.NOT_FOUND,
+    SESSION_EXPIRED: StatusCodes.UNAUTHORIZED,
+    INVALID_TOKEN: StatusCodes.UNAUTHORIZED,
+    EMAIL_NOT_VERIFIED: StatusCodes.FORBIDDEN,
+    ACCOUNT_DISABLED: StatusCodes.FORBIDDEN,
+  };
+
+  const statusCode =
+    statusMap[err.code] ?? StatusCodes.UNAUTHORIZED;
+
+  return new AppError(message, statusCode);
+};
 
 // ------------------- SEND ERROR -------------------
 
-const sendErrorDev = (err, req, res, next) => {
-    logger.error(err.message, {
-      stack: err.stack,
-      path: req.originalUrl,
-      method: req.method,
-      url: req.originalUrl,
-      ip: req.ip,
-    });
-
-
-  res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
-    success: false,
-    message: err.message,
+const logError = (err, req) => {
+  logger.error(err.message, {
     stack: err.stack,
-    error: err,
+    method: req.method,
+    path: req.originalUrl,
+    ip: req.ip,
+    statusCode: err.statusCode,
+    isOperational: err.isOperational ?? false,
   });
 };
 
-const sendErrorProd = (err, req, res) => {
-  // Always log error in production
-  logger.error(err.message, {
-    stack: err.stack,
-    path: req.originalUrl,
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip,
-  });
+const sendErrorDev = (err, req, res) => {
+  logError(err, req);
 
-  res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
-    success: false,
-    message: err.isOperational ? err.message : "Something went wrong!",
-  });
+  return res
+    .status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+    .json({
+      success: false,
+      statusCode: err.statusCode,
+      message: err.message,
+      stack: err.stack,
+      error: err,
+    });
+};
+
+const sendErrorProd = (err, req, res) => {
+  logError(err, req);
+
+  return res
+    .status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+    .json({
+      success: false,
+      message: err.isOperational
+        ? err.message
+        : "Something went wrong. Please try again later.",
+    });
 };
 
 // ------------------- GLOBAL ERROR HANDLER -------------------
 
-module.exports = (err, req, res, next) => {
-  // Default values
+export default (err, req, res, next) => {
   err.statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-  err.isOperational =
-  err.isOperational !== undefined ? err.isOperational : false;
+  err.isOperational = err.isOperational ?? false;
 
   if (process.env.NODE_ENV === "development") {
-    sendErrorDev(err, req, res);
-  } else {
-    // Clone error to avoid mutation issues
-    let error = Object.create(err);
-
-    // Mongoose / MongoDB errors
-    if (error.name === "CastError") error = handleDBCastError(error);
-    if (error.code === 11000) error = handleDBDuplicateFields(error);
-    if (error.name === "ValidationError")
-      error = handleDBValidationError(error);
-
-    // JWT errors
-    if (error.name === "JsonWebTokenError") error = handleJWTError();
-    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
-
-    sendErrorProd(error, req, res);
+    return sendErrorDev(err, req, res);
   }
+
+  // Clone to avoid mutating original error object
+  let error = Object.assign(Object.create(Object.getPrototypeOf(err)), err);
+
+  // Prisma errors
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    error = handlePrismaKnownError(error);
+  } else if (error instanceof Prisma.PrismaClientValidationError) {
+    error = handlePrismaValidationError();
+  } else if (error instanceof Prisma.PrismaClientInitializationError) {
+    error = handlePrismaInitializationError();
+  }
+
+  // BetterAuth errors
+  else if (error.isBetterAuthError === true) {
+    error = handleBetterAuthError(error);
+  }
+
+  return sendErrorProd(error, req, res);
 };
+
+
+
+
+
+
+
+
+

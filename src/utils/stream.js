@@ -1,4 +1,4 @@
-const logger = require("../config/logger");
+import logger from "../config/logger.js";
 
 const stream = {
   write: (message) => {
@@ -6,4 +6,4 @@ const stream = {
   },
 };
 
-module.exports = stream;
+export default stream;

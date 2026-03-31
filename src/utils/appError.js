@@ -1,4 +1,4 @@
-const { StatusCodes } = require("http-status-codes");
+import { StatusCodes } from "http-status-codes";
 
 // All AppErrors are operational
 class AppError extends Error {
@@ -12,4 +12,4 @@ class AppError extends Error {
   }
 }
 
-module.exports = AppError;
+export default AppError;

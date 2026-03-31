@@ -1,31 +1,33 @@
-const express = require("express");
+import express from "express";  
 const app = express();
 
-require("dotenv").config();
+import dotenv from "dotenv";  
+dotenv.config();
 
-// connectDB
-const {connectDB, disconnectDB} = require("./src/config/connectDB");
+// Prisma client
+const prisma = require("./src/utils/prisma.js")
+
 
 // Winston logger
-const logger = require("./src/config/logger");
+import logger from "./src/config/logger.js";
 
 // Request Logger
-const requestLogger = require("./src/middlewares/requestLogger");
+import  requestLogger from "./src/middlewares/requestLogger.js";
 
 // Global error handler
-const globalErrorHandler = require("./src/middlewares/globalErrorHandler"); 
+import globalErrorHandler from "./src/middlewares/globalErrorHandler.js"; 
 
 // AppError class for custom error handling
-const AppError = require("./src/utils/AppError");
+import AppError from "./src/utils/AppError.js";
 
 // HTTP status codes
-const { StatusCodes } = require("http-status-codes");
+import { StatusCodes } from "http-status-codes";
 
 // Set DNS servers for development environment to avoid potential DNS resolution issues
-// if (process.env.NODE_ENV !== "production") {
-//   const dns = require("dns");
-//   dns.setServers(["1.1.1.1", "8.8.8.8"]);
-// }
+import dns from "node:dns";
+if (process.env.NODE_ENV !== "production") {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+}
 
 // Port configuration
 const PORT = process.env.PORT || 3500;
@@ -54,8 +56,6 @@ let server; // store server reference
 // start server function with DB connection
 const serverStart = async () => {
   try {
-    // Connect to DB
-    await connectDB(process.env.MONGO_URI)
     server = app.listen(PORT, () => {
       if (process.env.NODE_ENV !== "production") {
         console.log(`Server running on port ${PORT}`);
@@ -94,7 +94,7 @@ const shutdown = async (code = 0) => {
       });
     }
 
-    await disconnectDB();
+    await prisma.$disconnect();
 
     clearTimeout(forceExit); // cancel the force exit
     console.log("Shutdown complete");
