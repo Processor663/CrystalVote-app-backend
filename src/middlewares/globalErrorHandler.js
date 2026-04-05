@@ -1,9 +1,9 @@
 
 // middlewares/globalErrorHandler.js
 import { StatusCodes } from "http-status-codes";
-import Prisma  from "../utils/prisma.js";
+import Prisma  from "../lib/prismaClient.js";
 import AppError from "../utils/AppError.js";
-import logger from "../config/logger.js";
+import logger from "../lib/logger.js";
 
 // ------------------- PRISMA ERROR HANDLERS -------------------
 

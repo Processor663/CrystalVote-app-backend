@@ -1,6 +1,17 @@
 // const AuditLogModel = require("../models/auditLog.model");
 // const logger = require("../config/logger");
 
+
+//claude: you have to delete auditLog manuelly
+// Run daily — deletes logs older than 90 days
+// await prisma.auditLog.deleteMany({
+//   where: {
+//     createdAt: {
+//       lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+//     }
+//   }
+// })
+
 // const logAudit = async ({
 //   userId,
 //   action,

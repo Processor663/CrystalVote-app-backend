@@ -1,6 +1,8 @@
 # Node modules
 node_modules/
 
+# Generated files
+src/generated/
 # Environment variables
 .env
 

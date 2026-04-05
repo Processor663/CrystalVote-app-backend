@@ -4,12 +4,9 @@ const app = express();
 import dotenv from "dotenv";  
 dotenv.config();
 
-// Prisma client
-const prisma = require("./src/utils/prisma.js")
-
 
 // Winston logger
-import logger from "./src/config/logger.js";
+import logger from "./src/lib/logger.js";
 
 // Request Logger
 import  requestLogger from "./src/middlewares/requestLogger.js";
