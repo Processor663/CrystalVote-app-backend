@@ -8,24 +8,57 @@ datasource db {
   provider = "postgresql"
 }
 
-
-model User {
-  id    String    @id @default(cuid())
-  email String  @unique
-  name  String?
-
+model Voter {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  password        String
+  nin             String   @unique  // national identity number
+  // voterCardNumber String   @unique
+  hasVoted        Boolean  @default(false)
+  votes           Vote[]
+  auditLogs AuditLog[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
-// model AuditLog {
-//   id         String    @id @default(cuid())
-//   userId     String?
-//   action     String
-//   resource   String?
-//   ipAddress  String?
-//   userAgent  String?
-//   metadata   Json?
-//   createdAt  DateTime @default(now()) @index
-// }
+model Admin {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      AdminRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Candidate {
+  id        String   @id @default(cuid())
+  name      String
+  // party     String
+  position  String   // president, governor, senator etc
+  votes     Vote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vote {
+  id          String    @id @default(cuid())
+  voterId     String
+  voter       Voter     @relation(fields: [voterId], references: [id])
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([voterId, candidateId]) // a voter can only vote once per candidate
+}
+
 
 model AuditLog {
   id        String     @id @default(cuid())
@@ -39,52 +72,10 @@ model AuditLog {
   updatedAt DateTime @updatedAt
 
   // Relation
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  voter      Voter?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Indexes
   @@index([userId])
   @@index([action])
   @@index([createdAt(sort: Desc)])
 }
-
-// const auditLogSchema = new mongoose.Schema(
-//   {
-//     userId: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "User",
-//       required: false,
-//     },
-//     action: {
-//       type: String,
-//       required: true,
-//     },
-//     resource: {
-//       type: String,
-//     },
-//     ipAddress: {
-//       type: String,
-//     },
-//     userAgent: {
-//       type: String,
-//     },
-
-//     metadata: {
-//       type: Object,
-//     },
-//     createdAt: {
-//       type: Date,
-//       default: Date.now,
-//       index: { expires: "90d" },
-//     },
-//   },
-//   { timestamps: true },
-// );
-
-// auditLogSchema.index({ userId: 1 });
-// auditLogSchema.index({ action: 1 });
-// auditLogSchema.index({ createdAt: -1 });
-
-
-// const AuditLogModel = mongoose.model("AuditLog", auditLogSchema);
-
-// module.exports = AuditLogModel;
