@@ -4,7 +4,6 @@ const app = express();
 import dotenv from "dotenv";  
 dotenv.config();
 
-
 // Winston logger
 import logger from "./src/lib/logger.js";
 
@@ -17,8 +16,15 @@ import globalErrorHandler from "./src/middlewares/globalErrorHandler.js";
 // AppError class for custom error handling
 import AppError from "./src/utils/AppError.js";
 
-// HTTP status codes
-import { StatusCodes } from "http-status-codes";
+import { StatusCodes } from "http-status-codes"; // HTTP status codes
+
+import cors from "cors";
+
+import cookieParser from "cookie-parser";
+
+import { toNodeHandler } from "better-auth/node";
+
+import { auth } from "./lib/auth.js";
 
 // Set DNS servers for development environment to avoid potential DNS resolution issues
 import dns from "node:dns";
@@ -30,23 +36,39 @@ if (process.env.NODE_ENV !== "production") {
 const PORT = process.env.PORT || 3500;
 
 // Middlewares
+app.use(cookieParser());
 app.use(express.json());
+app.use(requestLogger); // HTTP Request logging
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 
-// HTTP Request logging
-app.use(requestLogger);
+
+// Mount BetterAuth BEFORE all other routes
+app.all("/api/auth/*", toNodeHandler(auth));
 
 
-// Routes
+// Your Routes
+// app.use("/api/posts", postsRouter);
+// app.use("/api/users", usersRouter);
+
+
+
+
+
+
 
 // Catch-all for this router only
 app.use((req, res, next) => {
-  // res.status(404).json({ message: "Route not found" });
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, StatusCodes.NOT_FOUND));
 });
 
-
 // Global error handling middleware (it should be defined after all routes and other middlewares)
 app.use(globalErrorHandler);
+
 
 let server; // store server reference
 

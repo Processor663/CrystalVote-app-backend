@@ -41,10 +41,17 @@ model Candidate {
   id        String   @id @default(cuid())
   name      String
   // party     String
-  position  String   // president, governor, senator etc
+  position  CandidatePosition
   votes     Vote[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum CandidatePosition {
+  PRESIDENT
+  VICE_PRESIDENT
+  SECRETARY
+  TREASURER 
 }
 
 model Vote {
