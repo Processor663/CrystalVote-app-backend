@@ -24,7 +24,7 @@ import cookieParser from "cookie-parser";
 
 import { toNodeHandler } from "better-auth/node";
 
-import { auth } from "./lib/auth.js";
+import auth  from "./src/lib/auth.js";
 
 // Set DNS servers for development environment to avoid potential DNS resolution issues
 import dns from "node:dns";
@@ -37,7 +37,6 @@ const PORT = process.env.PORT || 3500;
 
 // Middlewares
 app.use(cookieParser());
-app.use(express.json());
 app.use(requestLogger); // HTTP Request logging
 app.use(
   cors({
@@ -45,19 +44,9 @@ app.use(
     credentials: true,
   }),
 );
-
-
-// Mount BetterAuth BEFORE all other routes
-app.all("/api/auth/*", toNodeHandler(auth));
-
-
-// Your Routes
-// app.use("/api/posts", postsRouter);
+app.use("/api/auth", toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes
+app.use(express.json()); // must come after betterAuth, because betterAuth accepts raw body for signature verification.
 // app.use("/api/users", usersRouter);
-
-
-
-
 
 
 
