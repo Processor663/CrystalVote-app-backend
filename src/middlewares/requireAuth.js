@@ -1,5 +1,7 @@
+import { success } from "zod";
 import  auth from "../lib/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
+import { StatusCodes } from "http-status-codes";  
 
 export async function requireAuth(req, res, next) {
   try {
@@ -8,7 +10,7 @@ export async function requireAuth(req, res, next) {
     });
 
     if (!session) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(StatusCodes.UNAUTHORIZED).json({success: false, message: "Unauthorized" });
     }
 
     req.user = session.user;
@@ -16,6 +18,6 @@ export async function requireAuth(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({ error: "Invalid session" });
+    return res.status(StatusCodes.UNAUTHORIZED).json({success: false, message: "Invalid session" });
   }
 }

@@ -1,8 +1,7 @@
 import express from "express";  
 const app = express();
 
-import dotenv from "dotenv";  
-dotenv.config();
+import "dotenv/config"; 
 
 // Winston logger
 import logger from "./src/lib/logger.js";
@@ -44,10 +43,18 @@ app.use(
     credentials: true,
   }),
 );
-app.use("/api/auth", toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes
+
+// app.all("/api/auth/*path",(req, _res, next) => {
+//     console.log("Auth route hit:", req.method, req.url);
+//     next();
+//   },toNodeHandler(auth),
+// ); 
+app.use("/api/auth", (req, _res, next)=> {
+   console.log("Auth route hit:", req.method, req.url);
+   next();
+},toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes
 app.use(express.json()); // must come after betterAuth, because betterAuth accepts raw body for signature verification.
 // app.use("/api/users", usersRouter);
-
 
 
 // Catch-all for this router only

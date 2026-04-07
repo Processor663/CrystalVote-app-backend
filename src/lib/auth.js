@@ -1,7 +1,13 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import Prisma from "./prismaClient.js";
+// import prisma from "./prismaClient.js";
+import { z } from "zod";
+import signUpSchema from "../validators/signUpSchema.js";
+import "dotenv/config"; 
 // import nodemailer from "nodemailer";
+
+import { PrismaClient } from "../generated/prisma/index.js";
+const prisma = new PrismaClient();
 
 
 
@@ -15,18 +21,33 @@ import Prisma from "./prismaClient.js";
 // });
 
 const auth = betterAuth({
-  database: prismaAdapter(Prisma, {
+  database: prismaAdapter(prisma, {
     provider: "postgresql", 
   }),
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // requireEmailVerification: true,
+  },
+ 
+  hooks: {
+    before: [
+      {
+        matcher: (context) => context.path === "/sign-up/email",
+        handler: async (context) => {
+          const result = signUpSchema.safeParse(context.body);
+
+          if (!result.success) {
+            throw new Error(result.error.errors[0].message);
+          }
+        },
+      },
+    ],
   },
 
   emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
+    // sendOnSignUp: true,
+    // autoSignInAfterVerification: true,
     // sendVerificationEmail: async ({ user, url }) => {
     //   await transporter.sendMail({
     //     from: `"My App" <no-reply@yourdomain.com>`,
@@ -38,14 +59,14 @@ const auth = betterAuth({
   },
 
   socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    },
+    // google: {
+    //   clientId: process.env.GOOGLE_CLIENT_ID,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    // },
+    // github: {
+    //   clientId: process.env.GITHUB_CLIENT_ID,
+    //   clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    // },
   },
 
   session: {

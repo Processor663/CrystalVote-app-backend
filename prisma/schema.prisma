@@ -8,28 +8,43 @@ datasource db {
   provider = "postgresql"
 }
 
-model Voter {
-  id              String   @id @default(cuid())
-  name            String
-  email           String   @unique
-  password        String
-  nin             String   @unique  // national identity number
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password  String
+  nin       String     @unique 
+  role      Role   @default(USER)
   // voterCardNumber String   @unique
-  hasVoted        Boolean  @default(false)
-  votes           Vote[]
+  hasVoted  Boolean    @default(false)
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // relations
+  candidate Candidate?
+  admin     Admin?
+  sessions      Session[]
+  accounts      Account[]
+  votes     Vote[]
   auditLogs AuditLog[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
 }
 
 model Admin {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      AdminRole @default(ADMIN)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  userId String @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+ // relations
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 enum AdminRole {
@@ -38,37 +53,40 @@ enum AdminRole {
 }
 
 model Candidate {
-  id        String   @id @default(cuid())
-  name      String
+  id        String            @id @default(cuid())
+  userId String @unique
   // party     String
   position  CandidatePosition
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // relations
   votes     Vote[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 enum CandidatePosition {
   PRESIDENT
   VICE_PRESIDENT
   SECRETARY
-  TREASURER 
+  TREASURER
 }
 
 model Vote {
   id          String    @id @default(cuid())
   voterId     String
-  voter       Voter     @relation(fields: [voterId], references: [id])
+  user       User     @relation(fields: [voterId], references: [id])
   candidateId String
   candidate   Candidate @relation(fields: [candidateId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([voterId, candidateId]) // a voter can only vote once per candidate
+  // a voter can only vote once per candidate
+  @@unique([voterId, candidateId])
 }
 
-
 model AuditLog {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String?
   action    String
   resource  String?
@@ -79,10 +97,59 @@ model AuditLog {
   updatedAt DateTime @updatedAt
 
   // Relation
-  voter      Voter?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Indexes
   @@index([userId])
   @@index([action])
   @@index([createdAt(sort: Desc)])
+}
+
+
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+ 
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
 }
