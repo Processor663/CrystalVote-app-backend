@@ -36,6 +36,7 @@ const PORT = process.env.PORT || 3500;
 
 // Middlewares
 app.use(cookieParser());
+app.use(express.json()); 
 app.use(requestLogger); // HTTP Request logging
 app.use(
   cors({
@@ -49,12 +50,42 @@ app.use(
 //     next();
 //   },toNodeHandler(auth),
 // ); 
+
 app.use("/api/auth", (req, _res, next)=> {
    console.log("Auth route hit:", req.method, req.url);
    next();
 },toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes
-app.use(express.json()); // must come after betterAuth, because betterAuth accepts raw body for signature verification.
 // app.use("/api/users", usersRouter);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Catch-all for this router only

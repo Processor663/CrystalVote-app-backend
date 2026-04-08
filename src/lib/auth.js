@@ -1,13 +1,10 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-// import prisma from "./prismaClient.js";
+import prisma from "./prismaClient.js";
 import { z } from "zod";
 import signUpSchema from "../validators/signUpSchema.js";
 import "dotenv/config"; 
 // import nodemailer from "nodemailer";
-
-import { PrismaClient } from "../generated/prisma/index.js";
-const prisma = new PrismaClient();
 
 
 
@@ -22,52 +19,54 @@ const prisma = new PrismaClient();
 
 const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql", 
+    provider: "postgresql",
   }),
 
   emailAndPassword: {
     enabled: true,
     // requireEmailVerification: true,
+    requireEmailVerification: false,
   },
+
+  // hooks: {
+  //   before: [
+  //     {
+  //       matcher: (context) => context.path === "/sign-up/email",
+  //       handler: async (context) => {
+  //         const result = signUpSchema.safeParse(context.body);
+
+  //         if (!result.success) {
+  //           throw new Error(result.error.errors[0].message);
+  //         }
+  //       },
+  //     },
+  //   ],
+  // },
+
  
-  hooks: {
-    before: [
-      {
-        matcher: (context) => context.path === "/sign-up/email",
-        handler: async (context) => {
-          const result = signUpSchema.safeParse(context.body);
+  // emailVerification: {
+  // sendOnSignUp: true,
+  // autoSignInAfterVerification: true,
+  // sendVerificationEmail: async ({ user, url }) => {
+  //   await transporter.sendMail({
+  //     from: `"My App" <no-reply@yourdomain.com>`,
+  //     to: user.email,
+  //     subject: "Verify your email",
+  //     html: `<a href="${url}">Click here to verify your email</a>`,
+  //   });
+  // },
+  // },
 
-          if (!result.success) {
-            throw new Error(result.error.errors[0].message);
-          }
-        },
-      },
-    ],
-  },
-
-  emailVerification: {
-    // sendOnSignUp: true,
-    // autoSignInAfterVerification: true,
-    // sendVerificationEmail: async ({ user, url }) => {
-    //   await transporter.sendMail({
-    //     from: `"My App" <no-reply@yourdomain.com>`,
-    //     to: user.email,
-    //     subject: "Verify your email",
-    //     html: `<a href="${url}">Click here to verify your email</a>`,
-    //   });
-    // },
-  },
-
-  socialProviders: {
-    // google: {
-    //   clientId: process.env.GOOGLE_CLIENT_ID,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    // },
-    // github: {
-    //   clientId: process.env.GITHUB_CLIENT_ID,
-    //   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    // },
-  },
+  // socialProviders: {
+  // google: {
+  //   clientId: process.env.GOOGLE_CLIENT_ID,
+  //   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  // },
+  // github: {
+  //   clientId: process.env.GITHUB_CLIENT_ID,
+  //   clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  // },
+  // },
 
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
