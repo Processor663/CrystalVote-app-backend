@@ -1,42 +1,26 @@
 import express from "express";  
-const app = express();
-
 import "dotenv/config"; 
-
-// Winston logger
-import logger from "./src/lib/logger.js";
-
-// Request Logger
-import  requestLogger from "./src/middlewares/requestLogger.js";
-
-// Global error handler
-import globalErrorHandler from "./src/middlewares/globalErrorHandler.js"; 
-
-// AppError class for custom error handling
-import AppError from "./src/utils/AppError.js";
-
+import logger from "./src/lib/logger.js"; //  Winston logger
+import  requestLogger from "./src/middlewares/requestLogger.js"; // Request Logger
+import globalErrorHandler from "./src/middlewares/globalErrorHandler.js"; // Global error handler
+import AppError from "./src/utils/AppError.js"; // AppError class for custom error handling
 import { StatusCodes } from "http-status-codes"; // HTTP status codes
-
 import cors from "cors";
-
 import cookieParser from "cookie-parser";
-
 import { toNodeHandler } from "better-auth/node";
-
 import auth  from "./src/lib/auth.js";
-
-// Set DNS servers for development environment to avoid potential DNS resolution issues
-import dns from "node:dns";
+import { validateSignUp } from "./src/middlewares/validateSignUp.js";
+import dns from "node:dns"; // Set DNS servers for development environment to avoid potential DNS resolution issues
 if (process.env.NODE_ENV !== "production") {
   dns.setServers(["1.1.1.1", "8.8.8.8"]);
 }
-
-// Port configuration
-const PORT = process.env.PORT || 3500;
+const app = express();
+const PORT = process.env.PORT || 3500; // Port configuration
 
 // Middlewares
-app.use(cookieParser());
 app.use(express.json()); 
+app.use(validateSignUp);
+app.use(cookieParser());
 app.use(requestLogger); // HTTP Request logging
 app.use(
   cors({
@@ -44,42 +28,14 @@ app.use(
     credentials: true,
   }),
 );
-
-// app.all("/api/auth/*path",(req, _res, next) => {
-//     console.log("Auth route hit:", req.method, req.url);
-//     next();
-//   },toNodeHandler(auth),
-// ); 
-
 app.use("/api/auth", (req, _res, next)=> {
    console.log("Auth route hit:", req.method, req.url);
    next();
 },toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes
+
+
+// ROUTES
 // app.use("/api/users", usersRouter);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -2,7 +2,6 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prismaClient.js";
 import { z } from "zod";
-import signUpSchema from "../validators/signUpSchema.js";
 import "dotenv/config"; 
 // import nodemailer from "nodemailer";
 
@@ -27,22 +26,6 @@ const auth = betterAuth({
     // requireEmailVerification: true,
     requireEmailVerification: false,
   },
-
-  // hooks: {
-  //   before: [
-  //     {
-  //       matcher: (context) => context.path === "/sign-up/email",
-  //       handler: async (context) => {
-  //         const result = signUpSchema.safeParse(context.body);
-
-  //         if (!result.success) {
-  //           throw new Error(result.error.errors[0].message);
-  //         }
-  //       },
-  //     },
-  //   ],
-  // },
-
  
   // emailVerification: {
   // sendOnSignUp: true,
