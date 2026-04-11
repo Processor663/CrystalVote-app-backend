@@ -39,7 +39,7 @@ export function validateAuth(req, _res, next) {
   }
 
   req.body = result.data;
-  console.log(`Validated request body: ${JSON.stringify(req.body)}`);
+ 
 
   next();
 }

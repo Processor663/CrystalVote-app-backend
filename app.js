@@ -18,8 +18,8 @@ const app = express();
 const PORT = process.env.PORT || 3500; // Port configuration
 
 // Middlewares
-// app.use(express.json()); 
-// app.use(validateAuth);
+app.use(express.json()); 
+app.use(validateAuth);
 app.use(cookieParser());
 app.use(requestLogger); // HTTP Request logging
 app.use(

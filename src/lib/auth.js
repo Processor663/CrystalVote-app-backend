@@ -26,7 +26,16 @@ const auth = betterAuth({
     // requireEmailVerification: true,
     requireEmailVerification: false,
   },
- 
+  user: {
+    additionalFields: {
+      nin: {
+        type: "string",
+        required: true, // ← set false if optional
+        input: true, // ← accept it from the sign-up request body
+      },
+    },
+  },
+
   // emailVerification: {
   // sendOnSignUp: true,
   // autoSignInAfterVerification: true,
