@@ -12,8 +12,8 @@ model User {
   id        String     @id @default(cuid())
   name      String
   email     String     @unique
-  password  String
-  nin       String     @unique 
+  password  String?
+  nin       String?     @unique 
   role      Role   @default(USER)
   // voterCardNumber String   @unique
   hasVoted  Boolean    @default(false)
