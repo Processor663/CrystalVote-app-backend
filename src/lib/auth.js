@@ -1,30 +1,24 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prismaClient.js";
-import { z } from "zod";
-import "dotenv/config"; 
-// import nodemailer from "nodemailer";
+import { sendEmail } from "./sendEmail.js";
+import {
+  verificationEmailTemplate,
+  passwordResetEmailTemplate,
+} from "../templates/emailTemplates.js ";
+import "dotenv/config";
 
-
-
-// const transporter = nodemailer.createTransport({
-//   host: process.env.SMTP_HOST,
-//   port: Number(process.env.SMTP_PORT),
-//   auth: {
-//     user: process.env.SMTP_USER,
-//     pass: process.env.SMTP_PASS,
-//   },
-// });
+const APP_NAME = process.env.APP_NAME || "crystal-vote app";
 
 const auth = betterAuth({
+  appName: APP_NAME,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
 
   emailAndPassword: {
     enabled: true,
-    // requireEmailVerification: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
   },
   user: {
     additionalFields: {
@@ -35,19 +29,39 @@ const auth = betterAuth({
       },
     },
   },
+  sendResetPassword: async ({ user, url }) => {
+    // void = don't await — prevents timing attacks
+    void sendEmail({
+      to: user.email,
+      subject: `Reset your ${APP_NAME} password`,
+      html: passwordResetEmailTemplate({
+        name: user.name,
+        url,
+        appName: APP_NAME,
+        
+      }),
+    });
+  },
 
-  // emailVerification: {
-  // sendOnSignUp: true,
-  // autoSignInAfterVerification: true,
-  // sendVerificationEmail: async ({ user, url }) => {
-  //   await transporter.sendMail({
-  //     from: `"My App" <no-reply@yourdomain.com>`,
-  //     to: user.email,
-  //     subject: "Verify your email",
-  //     html: `<a href="${url}">Click here to verify your email</a>`,
-  //   });
-  // },
-  // },
+  emailVerification: {
+    sendOnSignUp: true, // send verification email on sign up
+    sendOnSignIn: true, // resend if user tries to sign in unverified
+    autoSignInAfterVerification: true, // auto sign in after email is verified
+    expiresIn: 3600, // token expires in 1 hour
+
+    sendVerificationEmail: async ({ user, url }) => {
+      // void = don't await — prevents timing attacks
+      void sendEmail({
+        to: user.email,
+        subject: `Verify your ${APP_NAME} email address`,
+        html: verificationEmailTemplate({
+          name: user.name,
+          url,
+          appName: APP_NAME,
+        }),
+      });
+    },
+  },
 
   // socialProviders: {
   // google: {
