@@ -38,11 +38,13 @@ app.use("/api/auth", (req, _res, next)=> {
 // app.use("/api/users", usersRouter);
 
 
-
-
-
-
-
+// routes to handler better-auth redirect default verification routes— add this before your 404 handler
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Email verified successfully! You can now log in.",
+  });
+});
 
 // Catch-all for this router only
 app.use((req, res, next) => {
