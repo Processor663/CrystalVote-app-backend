@@ -18,20 +18,23 @@ const app = express();
 const PORT = process.env.PORT || 3500; // Port configuration
 
 // Middlewares
-app.use(express.json()); 
+app.use(express.json()); // must be after better-auth to ensure auth routes can parse JSON bodies
 app.use(validateAuth);
 app.use(cookieParser());
 app.use(requestLogger); // HTTP Request logging
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
+    // methods: ["GET", "POST", "PUT", "DELETE"], 
     credentials: true,
   }),
 );
-app.use("/api/auth", (req, _res, next)=> {
-   console.log("Auth route hit:", req.method, req.url);
-   next();
-},toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes
+// app.use("/api/auth", (req, _res, next)=> {
+//    console.log("Auth route hit:", req.method, req.url);
+//    next();
+// },toNodeHandler(auth)); // Mount BetterAuth BEFORE all other routes, express.json() and before validateAuth.
+app.all("/api/auth/*splat", toNodeHandler(auth)) // Must be above other routes, express.json() and before validateAuth 
+
 
 
 // ROUTES

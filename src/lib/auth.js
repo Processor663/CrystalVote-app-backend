@@ -5,8 +5,9 @@ import { sendEmail } from "./sendEmail.js";
 import {
   verificationEmailTemplate,
   passwordResetEmailTemplate,
-} from "../templates/emailTemplates.js ";
+} from "../templates/emailTemplates.js";
 import "dotenv/config";
+import logger from "./logger.js";
 
 const APP_NAME = process.env.APP_NAME || "crystal-vote app";
 
@@ -19,6 +20,25 @@ const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url , token}) => {
+      console.log(`Password reset requested for ${user.email}, token: ${token}`);
+      // void = don't await — prevents timing attacks
+      void sendEmail({
+        to: user.email,
+        subject: `Reset your ${APP_NAME} password`,
+        html: passwordResetEmailTemplate({
+          name: user.name,
+          url,
+          appName: APP_NAME,
+        }),
+      });
+    },
+    resetPasswordTokenExpiresIn: 3600, // token valid for 1 hour
+
+    //remember to add audit logs for security-sensitive actions like password resets
+    onPasswordReset: async ({ user }) => {
+      logger.info(`Password reset for user ${user.email}`);
+    },
   },
   user: {
     additionalFields: {
@@ -28,19 +48,6 @@ const auth = betterAuth({
         input: true, // ← accept it from the sign-up request body
       },
     },
-  },
-  sendResetPassword: async ({ user, url }) => {
-    // void = don't await — prevents timing attacks
-    void sendEmail({
-      to: user.email,
-      subject: `Reset your ${APP_NAME} password`,
-      html: passwordResetEmailTemplate({
-        name: user.name,
-        url,
-        appName: APP_NAME,
-        
-      }),
-    });
   },
 
   emailVerification: {
