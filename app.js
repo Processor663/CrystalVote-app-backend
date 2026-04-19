@@ -1,5 +1,7 @@
-import "dotenv/config"; 
 import express from "express";  
+import "dotenv/config"; 
+import cron from "node-cron";
+import { cleanOldAuditLogs } from "./src/services/audit.service.js"; // Import the function to clean old audit logs
 import logger from "./src/lib/logger.js"; //  Winston logger
 import  requestLogger from "./src/middlewares/requestLogger.js"; // Request Logger
 import globalErrorHandler from "./src/middlewares/globalErrorHandler.js"; // Global error handler
@@ -10,12 +12,14 @@ import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import auth  from "./src/lib/auth.js";
 import { validateAuth } from "./src/middlewares/validateAuth.js"; // Validation middleware for auth routes
-import dns from "node:dns"; // Set DNS servers for development environment to avoid potential DNS resolution issues
-if (process.env.NODE_ENV !== "production") {
-  dns.setServers(["1.1.1.1", "8.8.8.8"]);
-}
+// import dns from "node:dns"; // Set DNS servers for development environment to avoid potential DNS resolution issues
+// if (process.env.NODE_ENV !== "production") {
+//   dns.setServers(["1.1.1.1", "8.8.8.8"]);
+// }
 const app = express();
 const PORT = process.env.PORT || 3500; // Port configuration
+cron.schedule("0 0 * * *", cleanOldAuditLogs); // runs daily at midnight
+
 
 // Middlewares
 app.use(express.json()); // must be after better-auth to ensure auth routes can parse JSON bodies
