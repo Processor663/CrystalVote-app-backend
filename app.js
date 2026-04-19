@@ -1,5 +1,5 @@
-import express from "express";  
 import "dotenv/config"; 
+import express from "express";  
 import logger from "./src/lib/logger.js"; //  Winston logger
 import  requestLogger from "./src/middlewares/requestLogger.js"; // Request Logger
 import globalErrorHandler from "./src/middlewares/globalErrorHandler.js"; // Global error handler

@@ -1,22 +1,22 @@
-
-// middlewares/globalErrorHandler.js
+// import "dotenv/config"; 
 import { StatusCodes } from "http-status-codes";
-import Prisma  from "../lib/prismaClient.js";
+import prisma, { Prisma } from "../lib/prismaClient.js"; //this is the global this
 import AppError from "../utils/appError.js";
 import logger from "../lib/logger.js";
 
+
 // ------------------- PRISMA ERROR HANDLERS -------------------
 
-// Unique constraint violation 
+// Unique constraint violation
 const handlePrismaUniqueConstraint = (err) => {
   const fields = err.meta?.target?.join(", ") ?? "field";
   return new AppError(
     `Duplicate value on: ${fields}. Please use another value.`,
-    StatusCodes.CONFLICT
+    StatusCodes.CONFLICT,
   );
 };
 
-// Record not found 
+// Record not found
 const handlePrismaNotFound = (err) => {
   const model = err.meta?.modelName ?? "Record";
   return new AppError(`${model} not found.`, StatusCodes.NOT_FOUND);
@@ -27,7 +27,7 @@ const handlePrismaForeignKeyConstraint = (err) => {
   const field = err.meta?.field_name ?? "related record";
   return new AppError(
     `Related ${field} does not exist.`,
-    StatusCodes.BAD_REQUEST
+    StatusCodes.BAD_REQUEST,
   );
 };
 
@@ -35,14 +35,14 @@ const handlePrismaForeignKeyConstraint = (err) => {
 const handlePrismaValidationError = () =>
   new AppError(
     "Invalid input data. Please check your request.",
-    StatusCodes.BAD_REQUEST
+    StatusCodes.BAD_REQUEST,
   );
 
 // Database connection failure
 const handlePrismaInitializationError = () =>
   new AppError(
     "Unable to connect to the database. Please try again later.",
-    StatusCodes.SERVICE_UNAVAILABLE
+    StatusCodes.SERVICE_UNAVAILABLE,
   );
 
 // Map Prisma known error codes to handlers
@@ -61,7 +61,7 @@ const handlePrismaKnownError = (err) => {
     default:
       return new AppError(
         "A database error occurred. Please try again.",
-        StatusCodes.INTERNAL_SERVER_ERROR
+        StatusCodes.INTERNAL_SERVER_ERROR,
       );
   }
 };
@@ -81,8 +81,7 @@ const handleBetterAuthError = (err) => {
     ACCOUNT_DISABLED: StatusCodes.FORBIDDEN,
   };
 
-  const statusCode =
-    statusMap[err.code] ?? StatusCodes.UNAUTHORIZED;
+  const statusCode = statusMap[err.code] ?? StatusCodes.UNAUTHORIZED;
 
   return new AppError(message, statusCode);
 };
@@ -103,28 +102,24 @@ const logError = (err, req) => {
 const sendErrorDev = (err, req, res) => {
   logError(err, req);
 
-  return res
-    .status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
-    .json({
-      success: false,
-      statusCode: err.statusCode,
-      message: err.message,
-      stack: err.stack,
-      error: err,
-    });
+  return res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
+    success: false,
+    statusCode: err.statusCode,
+    message: err.message,
+    stack: err.stack,
+    error: err,
+  });
 };
 
 const sendErrorProd = (err, req, res) => {
   logError(err, req);
 
-  return res
-    .status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
-    .json({
-      success: false,
-      message: err.isOperational
-        ? err.message
-        : "Something went wrong. Please try again later.",
-    });
+  return res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
+    success: false,
+    message: err.isOperational
+      ? err.message
+      : "Something went wrong. Please try again later.",
+  });
 };
 
 // ------------------- GLOBAL ERROR HANDLER -------------------
@@ -138,7 +133,10 @@ export default (err, req, res, next) => {
   }
 
   // Clone to avoid mutating original error object
+  // let error = Object.assign(Object.create(Object.getPrototypeOf(err)), err);
   let error = Object.assign(Object.create(Object.getPrototypeOf(err)), err);
+  error.message = err.message; 
+  error.stack = err.stack; 
 
   // Prisma errors
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -156,12 +154,3 @@ export default (err, req, res, next) => {
 
   return sendErrorProd(error, req, res);
 };
-
-
-
-
-
-
-
-
-
