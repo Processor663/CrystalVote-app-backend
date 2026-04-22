@@ -54,7 +54,13 @@ const auth = betterAuth({
       await logAudit({
         userId: user.id,
         action: "PASSWORD_RESET",
+        ipAddress:
+          ctx.request?.headers?.get("x-forwarded-for") ??
+          ctx.request?.headers?.get("x-real-ip") ??
+          null,
+        userAgent: ctx.request?.headers?.get("user-agent") ?? null,
         metadata: { email: user.email },
+        requestId: ctx.request?.headers?.get("x-request-id") ?? null,
       });
     },
   },
@@ -132,6 +138,12 @@ const auth = betterAuth({
           await logAudit({
             userId: user.id,
             action: "USER_REGISTERED",
+            ipAddress:
+              ctx.request?.headers?.get("x-forwarded-for") ??
+              ctx.request?.headers?.get("x-real-ip") ??
+              null,
+            userAgent: ctx.request?.headers?.get("user-agent") ?? null,
+            requestId: ctx.request?.headers?.get("x-request-id") ?? null,
             metadata: { email: user.email },
           });
         },
@@ -157,6 +169,12 @@ const auth = betterAuth({
           await logAudit({
             userId: session.userId,
             action: "USER_LOGIN",
+            ipAddress:
+              ctx.request?.headers?.get("x-forwarded-for") ??
+              ctx.request?.headers?.get("x-real-ip") ??
+              null,
+            userAgent: ctx.request?.headers?.get("user-agent") ?? null,
+            requestId: ctx.request?.headers?.get("x-request-id") ?? null,
             metadata: { sessionId: session.id },
           });
         },
@@ -167,8 +185,14 @@ const auth = betterAuth({
         after: async (session) => {
           await logAudit({
             userId: session.userId,
+            ipAddress:
+              ctx.request?.headers?.get("x-forwarded-for") ??
+              ctx.request?.headers?.get("x-real-ip") ??
+              null,
+            userAgent: ctx.request?.headers?.get("user-agent") ?? null,
             action: "USER_LOGOUT",
             metadata: { sessionId: session.id },
+            requestId: ctx.request?.headers?.get("x-request-id") ?? null,
           });
         },
       },
@@ -182,8 +206,12 @@ const auth = betterAuth({
     onError: (error, ctx) => {
       void logAudit({
         action: "AUTH_ERROR",
-        ipAddress: ctx.request?.headers?.get("x-forwarded-for"),
         userAgent: ctx.request?.headers?.get("user-agent"),
+        ipAddress:
+          ctx.request?.headers?.get("x-forwarded-for") ??
+          ctx.request?.headers?.get("x-real-ip") ??
+          null,
+        requestId: ctx.request?.headers?.get("x-request-id") ?? null,
         metadata: {
           error: error.message,
           path: ctx.request?.url,

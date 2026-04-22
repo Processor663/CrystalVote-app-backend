@@ -18,7 +18,7 @@ export async function sendEmail({ to, subject, html }) {
       subject,
       error: error.message,
     });
-    throw new Error(error.message);
+    return null;
   }
 
   logger.info("Email sent successfully", { to, subject, id: data.id });

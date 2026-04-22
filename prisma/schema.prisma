@@ -18,7 +18,7 @@ model User {
   // voterCardNumber String   @unique
   hasVoted  Boolean    @default(false)
   emailVerified Boolean   @default(false)
-  image         String?
+  // image         String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -56,6 +56,7 @@ model Candidate {
   id        String            @id @default(cuid())
   userId String @unique
   // party     String
+  image     String
   position  CandidatePosition
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
@@ -89,6 +90,7 @@ model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
   action    String
+  requestId String? 
   resource  String?
   ipAddress String?
   userAgent String?
