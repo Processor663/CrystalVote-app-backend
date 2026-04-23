@@ -23,3 +23,16 @@ DEPENDENCIES
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^4.3.6"
   }
+
+
+
+
+
+POST   /admin/candidates        → create candidate (user + candidate)
+PATCH  /admin/candidates/:id    → update candidate (e.g. position)
+DELETE /admin/candidates/:id    → delete candidate
+GET    /admin/candidates        → list all candidates
+
+
+GET    /candidates/me
+PATCH  /candidates/me

@@ -54,10 +54,11 @@ enum AdminRole {
 
 model Candidate {
   id        String            @id @default(cuid())
-  userId String @unique
+  userId    String            @unique
   // party     String
-  image     String
+  image     String?
   position  CandidatePosition
+  manifesto  String?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
