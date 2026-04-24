@@ -30,5 +30,5 @@ export const createCandidate = asyncHandler(async (req, res) => {
       .status(StatusCodes.BAD_REQUEST)
       .json({ success: false, message: "Failed to create candidate" });
   } 
-  res.status(StatusCodes.CREATED).json({ success: true, message: "Candidate created successfully", data: candidate });
+  res.status(StatusCodes.CREATED).json({ success: true, data: candidate });
 });
