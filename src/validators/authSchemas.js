@@ -21,7 +21,6 @@ const signUpSchema = z
       .trim()
       .min(11, "NIN must be at least 11 characters")
       .max(20, "NIN must be at most 20 characters"),
-    image: z.string().url("Invalid image URL").optional(),
   })
   .strict();
 

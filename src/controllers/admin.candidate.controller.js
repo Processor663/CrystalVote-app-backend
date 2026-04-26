@@ -3,11 +3,13 @@ import { StatusCodes } from "http-status-codes";
 import {
   getCandidatesByAdmin,
   createCandidateByAdmin,
-  updateCandidateByAdmin,
-  deleteCandidateByAdmin,
+  // updateCandidateByAdmin,
+  // deleteCandidateByAdmin,
 } from "../services/admin.candidate.service.js";
-import { createCandidateSchema } from "../validators/candidate.validator.js";
-import AppError from "../utils/appError.js";  
+import { adminCreateCandidateSchema } from "../validators/candidate.validator.js";
+import AppError from "../utils/appError.js";
+import logger  from "../lib/logger.js";
+import { logAudit } from "../services/audit.service.js";
 
 
 
@@ -19,16 +21,30 @@ export const getCandidates = asyncHandler(async (req, res) => {
 });
 
 export const createCandidate = asyncHandler(async (req, res) => {
-    const { error, data } = createCandidateSchema.safeParse(req.body);
-    if (error) {
-      throw new AppError("Invalid user data provided", StatusCodes.BAD_REQUEST);
-    }
+  const result = adminCreateCandidateSchema.safeParse(req.body);
 
+  if (!result.success) {
+    const { fieldErrors, formErrors } = result.error.flatten();
+    const errors = Object.fromEntries(
+      Object.entries(fieldErrors).map(([field, messages]) => [
+        field,
+        messages[0],
+      ]),
+    );
+
+     const firstError = Object.entries(errors)[0];
+     const errorMessage = firstError;
+
+     throw new AppError(errorMessage, StatusCodes.BAD_REQUEST);
+     logger.error("Candidate creation failed", {
+       errors,
+       formErrors,
+     }); 
+  }
+ 
   const candidate = await createCandidateByAdmin(data);
   if (!candidate) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ success: false, message: "Failed to create candidate" });
+    throw new AppError("Candidate creation failed", StatusCodes.INTERNAL_SERVER_ERROR);
   } 
   res.status(StatusCodes.CREATED).json({ success: true, data: candidate });
 });

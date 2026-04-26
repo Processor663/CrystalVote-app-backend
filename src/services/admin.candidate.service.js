@@ -1,7 +1,8 @@
 import { StatusCodes } from "http-status-codes";
-import prisma from "../lib/prisma";
-import AppError from "../utils/appError";
-import logger from "../lib/logger";
+import prisma from "../lib/prismaClient.js";
+import logger from "../lib/logger.js";
+import AppError from "../utils/appError.js";
+
 
 export const getCandidatesByAdmin = async () => {
   return await prisma.candidate.findMany({});
@@ -58,6 +59,10 @@ export const createCandidateByAdmin = async (data) => {
     throw error;
   }
 };
+
+
+
+
 
 export const updateCandidateByAdmin = async (id, data) => {
   return await prisma.candidate.update({

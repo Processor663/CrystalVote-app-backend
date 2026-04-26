@@ -12,10 +12,8 @@ import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import auth  from "./src/lib/auth.js";
 import { validateAuth } from "./src/middlewares/validateAuth.js"; // Validation middleware for auth routes
-// import dns from "node:dns"; // Set DNS servers for development environment to avoid potential DNS resolution issues
-// if (process.env.NODE_ENV !== "production") {
-//   dns.setServers(["1.1.1.1", "8.8.8.8"]);
-// }
+import adminCandidateRoutes from "./src/routes/admin.candidate.routes.js"; // Admin Candidate routes
+
 const app = express();
 const PORT = process.env.PORT || 3500; // Port configuration
 cron.schedule("0 0 * * *", cleanOldAuditLogs); // runs daily at midnight
@@ -42,7 +40,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth)) // Must be above other routes, 
 
 
 // ROUTES
-// app.use("/api/users", usersRouter);
+app.use("/api/v1/admin/candidates", adminCandidateRoutes);
 
 
 // routes to handler better-auth redirect default verification routes— add this before your 404 handler
