@@ -15,6 +15,7 @@ import { logAudit } from "../services/audit.service.js";
 
 
 
+
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
   res.json({ success: true, data: candidates });
@@ -22,6 +23,7 @@ export const getCandidates = asyncHandler(async (req, res) => {
 
 export const createCandidate = asyncHandler(async (req, res) => {
   const result = adminCreateCandidateSchema.safeParse(req.body);
+   console.log("Validated candidate data:", result);
 
   if (!result.success) {
     const { fieldErrors, formErrors } = result.error.flatten();
@@ -41,8 +43,8 @@ export const createCandidate = asyncHandler(async (req, res) => {
        formErrors,
      }); 
   }
- 
-  const candidate = await createCandidateByAdmin(data);
+
+  const candidate = await createCandidateByAdmin(result.data);
   if (!candidate) {
     throw new AppError("Candidate creation failed", StatusCodes.INTERNAL_SERVER_ERROR);
   } 
