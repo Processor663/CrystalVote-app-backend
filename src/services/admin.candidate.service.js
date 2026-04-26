@@ -13,6 +13,7 @@ export const createCandidateByAdmin = async (data) => {
   const { name, email, password, nin, position } = data;
 
   let user = null;
+  let dbUser = null;
 
   try {
     user = await auth.api.signUpEmail({
@@ -25,9 +26,9 @@ export const createCandidateByAdmin = async (data) => {
       },
     });
 
-    const dbUser = await prisma.user.findUnique({
-       where: { id: user.user.id },
-     });
+    dbUser = await prisma.user.findUnique({
+    where: { id: user.user.id },
+    });
 
     if (!dbUser) {
        throw new AppError(
