@@ -22,4 +22,10 @@ const adminCreateCandidateSchema = z
   })
   .strict();
 
-export { adminCreateCandidateSchema };
+const adminUpdateCandidateSchema = adminCreateCandidateSchema
+   .partial()
+   .refine((data) => Object.keys(data).length > 0, {
+     message: "At least one field must be provided",
+   });  
+
+export { adminCreateCandidateSchema, adminUpdateCandidateSchema };

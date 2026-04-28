@@ -4,7 +4,6 @@ import logger from "../lib/logger.js";
 import AppError from "../utils/appError.js";
 import auth from "../lib/auth.js";
 
-
 export const getCandidatesByAdmin = async () => {
   return await prisma.candidate.findMany({});
 };
@@ -27,15 +26,15 @@ export const createCandidateByAdmin = async (data) => {
     });
 
     dbUser = await prisma.user.findUnique({
-    where: { id: user.user.id },
+      where: { id: user.user.id },
     });
 
     if (!dbUser) {
-       throw new AppError(
-         "User creation failed... Please try again.",
-         StatusCodes.INTERNAL_SERVER_ERROR,
-       );
-     }
+      throw new AppError(
+        "User creation failed... Please try again.",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
     const candidate = await prisma.candidate.create({
       data: {
         userId: dbUser.id,
@@ -58,16 +57,11 @@ export const createCandidateByAdmin = async (data) => {
               error: deleteError.message,
             },
           );
-          console.error("Rollback failed:", deleteError);
         });
     }
     throw error;
   }
 };
-
-
-
-
 
 export const updateCandidateByAdmin = async (id, data) => {
   return await prisma.candidate.update({

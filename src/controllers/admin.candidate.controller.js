@@ -3,15 +3,16 @@ import { StatusCodes } from "http-status-codes";
 import {
   getCandidatesByAdmin,
   createCandidateByAdmin,
-  // updateCandidateByAdmin,
-  // deleteCandidateByAdmin,
+  updateCandidateByAdmin,
+  deleteCandidateByAdmin,
 } from "../services/admin.candidate.service.js";
-import { adminCreateCandidateSchema } from "../validators/candidate.validator.js";
+import {
+  adminCreateCandidateSchema,
+  adminUpdateCandidateSchema,
+} from "../validators/candidate.validator.js";
 import AppError from "../utils/appError.js";
 import logger from "../lib/logger.js";
 import { logAudit } from "../services/audit.service.js";
-
-
 
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
@@ -42,16 +43,7 @@ export const createCandidate = asyncHandler(async (req, res) => {
   }
 
   const candidate = await createCandidateByAdmin(result.data);
-  if (!candidate) {
-    logger.error("Candidate creation failed", {
-      fields: Object.keys(result.data),
-    });
-
-    throw new AppError(
-      "Candidate creation failed",
-      StatusCodes.INTERNAL_SERVER_ERROR,
-    );
-  }
+  
   logAudit({
     userId: req.user?.id || null,
     action: "CANDIDATE_CREATED",
@@ -61,4 +53,58 @@ export const createCandidate = asyncHandler(async (req, res) => {
     requestId: req.id || null,
   });
   res.status(StatusCodes.CREATED).json({ success: true, data: candidate });
+});
+
+export const updateCandidate = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const result = adminUpdateCandidateSchema.safeParse(req.body);
+
+  if (!result.success) {
+    const { fieldErrors, formErrors } = result.error.flatten();
+    const errors = Object.fromEntries(
+      Object.entries(fieldErrors).map(([field, messages]) => [
+        field,
+        messages[0],
+      ]),
+    );
+
+    const firstError = Object.entries(errors)[0];
+    const errorMessage = firstError;
+
+    logger.warn("Update Candidate validation failed", {
+      errors,
+      formErrors,
+    });
+
+    throw new AppError(errorMessage, StatusCodes.BAD_REQUEST);
+  }
+
+  const updatedCandidate = await updateCandidateByAdmin(id, result.data);
+
+  logAudit({
+    userId: req.user?.id || null,
+    action: "CANDIDATE_UPDATED",
+    metadata: { candidateId: id },
+    ipAddress: req.ip,
+    userAgent: req.get("User-Agent") || null,
+    requestId: req.id || null,
+  });
+  res.json({ success: true, data: updatedCandidate });
+});
+
+export const deleteCandidate = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new AppError("Candidate ID is required", StatusCodes.BAD_REQUEST);
+  }
+  const deletedCandidate = await deleteCandidateByAdmin(id);
+  logAudit({
+    userId: req.user?.id || null,
+    action: "CANDIDATE_DELETED",
+    metadata: { candidateId: id },
+    ipAddress: req.ip,
+    userAgent: req.get("User-Agent") || null,
+    requestId: req.id || null,
+  });   
+  res.json({ success: true, message: "Candidate deleted successfully", data: deletedCandidate });
 });
