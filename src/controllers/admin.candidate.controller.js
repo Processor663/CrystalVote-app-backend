@@ -13,6 +13,7 @@ import {
 import AppError from "../utils/appError.js";
 import logger from "../lib/logger.js";
 import { logAudit } from "../services/audit.service.js";
+import { object } from "zod";
 
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
@@ -31,7 +32,10 @@ export const createCandidate = asyncHandler(async (req, res) => {
       ]),
     );
 
-    const firstError = Object.entries(errors)[0];
+    const firstError = 
+      Object.values(formErrors)[0] ||
+      Object.values(errors)[0] ||
+      "Invalid input data. Please check your inputs and try again.";
     const errorMessage = firstError;
 
     logger.warn("Candidate validation failed", {
@@ -42,8 +46,8 @@ export const createCandidate = asyncHandler(async (req, res) => {
     throw new AppError(errorMessage, StatusCodes.BAD_REQUEST);
   }
 
-  const candidate = await createCandidateByAdmin(result.data);
-  
+  const { candidate } = await createCandidateByAdmin(result.data);
+
   logAudit({
     userId: req.user?.id || null,
     action: "CANDIDATE_CREATED",
@@ -68,7 +72,10 @@ export const updateCandidate = asyncHandler(async (req, res) => {
       ]),
     );
 
-    const firstError = Object.entries(errors)[0];
+    const firstError =
+      Object.values(formErrors)[0] ||
+      Object.values(errors)[0] ||
+      "Invalid input data. Please check your inputs and try again.";
     const errorMessage = firstError;
 
     logger.warn("Update Candidate validation failed", {
@@ -105,6 +112,10 @@ export const deleteCandidate = asyncHandler(async (req, res) => {
     ipAddress: req.ip,
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
-  });   
-  res.json({ success: true, message: "Candidate deleted successfully", data: deletedCandidate });
+  });
+  res.json({
+    success: true,
+    message: "Candidate deleted successfully",
+    data: deletedCandidate,
+  });
 });

@@ -64,12 +64,24 @@ export const createCandidateByAdmin = async (data) => {
 };
 
 export const updateCandidateByAdmin = async (id, data) => {
-  return await prisma.candidate.update({
+  const { position, ...userData } = data;
+  const updatedUser = await prisma.user.update({
     where: { id },
     data: {
-      ...data,
+      ...userData,
     },
   });
+
+  let updatedCandidate = {};
+  if (position) {
+    updatedCandidate = await prisma.candidate.update({
+      where: { userId: id },
+      data: {
+        position,
+      },
+    });
+  }
+  return { ...updatedUser, candidate: updatedCandidate };
 };
 
 export const deleteCandidateByAdmin = async (id) => {

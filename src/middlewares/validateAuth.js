@@ -33,10 +33,11 @@ export function validateAuth(req, _res, next) {
       { errors, formErrors },
     );
 
-    const firstError = Object.entries(errors)[0];
-    const errorMessage = firstError
-      ? `${firstError[0]}` + " is required"
-      : "Invalid input data. Please check your inputs and try again.";
+    const firstError =
+      Object.values(formErrors)[0] ||
+      Object.values(errors)[0] ||
+      "Invalid input data. Please check your inputs and try again.";
+    const errorMessage = firstError;
     return next(new AppError(errorMessage, StatusCodes.BAD_REQUEST));
   }
 
@@ -44,4 +45,3 @@ export function validateAuth(req, _res, next) {
 
   next();
 }
-

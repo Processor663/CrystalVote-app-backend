@@ -15,6 +15,7 @@ import { validateAuth } from "./src/middlewares/validateAuth.js"; // Validation 
 import adminCandidateRoutes from "./src/routes/admin.candidate.routes.js"; // Admin Candidate routes
 
 const app = express();
+
 const PORT = process.env.PORT || 3500; // Port configuration
 cron.schedule("0 0 * * *", cleanOldAuditLogs); // runs daily at midnight
 
