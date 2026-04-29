@@ -21,7 +21,6 @@ export const createCandidateByAdmin = async (data) => {
         email,
         password,
         nin,
-        role: "CANDIDATE",
       },
     });
 
@@ -35,6 +34,12 @@ export const createCandidateByAdmin = async (data) => {
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
     }
+
+    await prisma.user.update({
+      where: { id: user.user.id },
+      data: { role: "CANDIDATE" },
+    });
+
     const candidate = await prisma.candidate.create({
       data: {
         userId: dbUser.id,

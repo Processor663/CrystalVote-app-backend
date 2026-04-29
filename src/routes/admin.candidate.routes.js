@@ -6,7 +6,10 @@ import {
   updateCandidate,
   deleteCandidate,
 } from "../controllers/admin.candidate.controller.js";
+import { requireAuth } from "../middlewares/requireAuth.js";
 
+
+router.use(requireAuth);  
 router
   .route("/")
   .get(getCandidates)
