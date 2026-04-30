@@ -10,7 +10,6 @@ import "dotenv/config";
 import logger from "./logger.js";
 import { logAudit } from "../services/audit.service.js";
 
-
 const APP_NAME = process.env.APP_NAME || "crystal-vote app";
 
 const auth = betterAuth({
@@ -88,6 +87,10 @@ const auth = betterAuth({
         type: "string",
         required: true,
         input: true,
+      },
+      role: {
+        type: "string",
+        input: false,
       },
     },
   },
@@ -178,7 +181,6 @@ const auth = betterAuth({
   // ════════════════════════════════════════
   onAPIError: {
     onError: (error, ctx) => {
-  
       void logAudit({
         action: "AUTH_ERROR",
         userAgent: ctx.request?.headers?.get("user-agent"),

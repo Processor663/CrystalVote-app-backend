@@ -90,7 +90,7 @@ export const updateCandidateByAdmin = async (id, data) => {
 };
 
 export const deleteCandidateByAdmin = async (id) => {
-  return await prisma.candidate.delete({
+  return await prisma.user.delete({
     where: { id },
   });
 };
