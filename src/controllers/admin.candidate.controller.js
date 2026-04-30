@@ -17,7 +17,7 @@ import { object } from "zod";
 
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
-  res.json({ success: true, data: candidates });
+  res.json({ success: true, total: candidates.length, data: candidates });
 });
 
 export const createCandidate = asyncHandler(async (req, res) => {
@@ -48,11 +48,12 @@ export const createCandidate = asyncHandler(async (req, res) => {
 
   const { candidate } = await createCandidateByAdmin(result.data);
 
-  logAudit({
+  await logAudit({
     userId: req.user?.id || null,
     action: "CANDIDATE_CREATED",
+    resource: "USER/CANDIDATE",
     metadata: { candidateId: candidate.id },
-    ipAddress: req.ip,
+    ipAddress: req.headers["x-forwarded-for"]?.split(",")[0].trim() ?? req.ip,
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
   });
@@ -88,11 +89,12 @@ export const updateCandidate = asyncHandler(async (req, res) => {
 
   const updatedCandidate = await updateCandidateByAdmin(id, result.data);
 
-  logAudit({
+  await logAudit({
     userId: req.user?.id || null,
     action: "CANDIDATE_UPDATED",
+    resource: "USER/CANDIDATE",
     metadata: { candidateId: id },
-    ipAddress: req.ip,
+    ipAddress: req.headers["x-forwarded-for"]?.split(",")[0].trim() ?? req.ip,
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
   });
@@ -105,11 +107,12 @@ export const deleteCandidate = asyncHandler(async (req, res) => {
     throw new AppError("Candidate ID is required", StatusCodes.BAD_REQUEST);
   }
   const deletedCandidate = await deleteCandidateByAdmin(id);
-  logAudit({
+  await logAudit({
     userId: req.user?.id || null,
     action: "CANDIDATE_DELETED",
+    resource: "USER/CANDIDATE",
     metadata: { candidateId: id },
-    ipAddress: req.ip,
+    ipAddress: req.headers["x-forwarded-for"]?.split(",")[0].trim() ?? req.ip,
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
   });

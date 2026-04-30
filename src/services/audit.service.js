@@ -32,6 +32,7 @@ export const cleanOldAuditLogs = async (batchSize = 1000) => {
 
 const logAudit = async ({
   userId,
+  resource,
   action,
   ipAddress,
   userAgent,
@@ -43,6 +44,7 @@ const logAudit = async ({
       data: {
         userId: userId || null, // Allow null for unauthenticated actions
         action,
+        resource: resource || null,
         ipAddress: ipAddress || null,
         userAgent: userAgent || null,
         requestId: requestId || null,

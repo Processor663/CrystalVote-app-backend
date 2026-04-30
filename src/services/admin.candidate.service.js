@@ -5,7 +5,10 @@ import AppError from "../utils/appError.js";
 import auth from "../lib/auth.js";
 
 export const getCandidatesByAdmin = async () => {
-  return await prisma.candidate.findMany({});
+  return await prisma.user.findMany({
+    where: { role: "CANDIDATE" },
+    include: { candidate: true },
+  });
 };
 
 export const createCandidateByAdmin = async (data) => {
