@@ -14,7 +14,6 @@ import AppError from "../utils/appError.js";
 import logger from "../lib/logger.js";
 import { logAudit } from "../services/audit.service.js";
 
-
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
   res.json({ success: true, total: candidates.length, data: candidates });
@@ -32,7 +31,7 @@ export const createCandidate = asyncHandler(async (req, res) => {
       ]),
     );
 
-    const firstError = 
+    const firstError =
       Object.values(formErrors)[0] ||
       Object.values(errors)[0] ||
       "Invalid input data. Please check your inputs and try again.";
@@ -61,6 +60,9 @@ export const createCandidate = asyncHandler(async (req, res) => {
 });
 
 export const updateCandidate = asyncHandler(async (req, res) => {
+  if (!req.params || !req.params.id) {
+    throw new AppError("Candidate ID is required", StatusCodes.BAD_REQUEST);
+  }
   const { id } = req.params;
   const result = adminUpdateCandidateSchema.safeParse(req.body);
 
@@ -102,10 +104,11 @@ export const updateCandidate = asyncHandler(async (req, res) => {
 });
 
 export const deleteCandidate = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!id) {
+  if (!req.params || !req.params.id) {
     throw new AppError("Candidate ID is required", StatusCodes.BAD_REQUEST);
   }
+  
+  const { id } = req.params;
   const deletedCandidate = await deleteCandidateByAdmin(id);
   await logAudit({
     userId: req.user?.id || null,

@@ -36,4 +36,22 @@ const updateCandidateSchema = adminCreateCandidateSchema
     message: "At least one field must be provided",
   });
 
-export { adminCreateCandidateSchema, adminUpdateCandidateSchema, updateCandidateSchema };
+const updateUserSchema = adminCreateCandidateSchema
+  .omit({
+    email: true,
+    password: true,
+    nin: true,
+    position: true,
+    manifesto: true,
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
+
+export {
+  adminCreateCandidateSchema,
+  adminUpdateCandidateSchema,
+  updateCandidateSchema,
+  updateUserSchema,
+};
