@@ -4,7 +4,7 @@ import {
   getUser,
   getAllUsers,
   updateUser,
-} from "../services/candidate.service.js";
+} from "../services/user.service.js";
 import { updateUserSchema } from "../validators/candidate.validator.js";
 import AppError from "../utils/appError.js";
 import logger from "../lib/logger.js";
