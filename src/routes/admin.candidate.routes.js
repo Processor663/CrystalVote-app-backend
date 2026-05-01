@@ -13,7 +13,6 @@ import { authorize } from "../middlewares/authorize.js";
 router.use(requireAuth, authorize(["SUPER_ADMIN", "ADMIN"]));
 
 router.route("/").get(getCandidates).post(createCandidate);
-
 router.route("/:id").patch(updateCandidate).delete(deleteCandidate);
 
 export default router;

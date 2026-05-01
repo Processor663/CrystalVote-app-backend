@@ -13,6 +13,8 @@ import { toNodeHandler } from "better-auth/node";
 import auth  from "./src/lib/auth.js";
 import { validateAuth } from "./src/middlewares/validateAuth.js"; // Validation middleware for auth routes
 import adminCandidateRoutes from "./src/routes/admin.candidate.routes.js"; // Admin Candidate routes
+import candidateRoutes from "./src/routes/candidate.route.js"; // Candidate routes
+
 
 const app = express();
 
@@ -42,6 +44,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth)) // Must be above other routes, 
 
 // ROUTES
 app.use("/api/v1/admin/candidates", adminCandidateRoutes);
+app.use("/api/v1/candidates", candidateRoutes);
 
 
 // routes to handler better-auth redirect default verification routes— add this before your 404 handler
