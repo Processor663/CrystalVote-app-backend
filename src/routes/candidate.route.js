@@ -3,6 +3,7 @@ const router = express.Router();
 import {
   getAllCandidatesController,
   getCandidateController,
+  updateCandidateController,
 } from "../controllers/candidate.controller.js";
 import { requireAuth } from "../middlewares/requireAuth.js";
 import { authorize } from "../middlewares/authorize.js";
@@ -12,5 +13,6 @@ router.use(requireAuth);
 
 router.route("/").get(getAllCandidatesController);
 router.route("/me").get(authorize(["CANDIDATE"]), getCandidateController);
+router.route("/me").patch(authorize(["CANDIDATE"]), updateCandidateController);
 
 export default router;

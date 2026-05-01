@@ -13,7 +13,7 @@ import {
 import AppError from "../utils/appError.js";
 import logger from "../lib/logger.js";
 import { logAudit } from "../services/audit.service.js";
-import { object } from "zod";
+
 
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
