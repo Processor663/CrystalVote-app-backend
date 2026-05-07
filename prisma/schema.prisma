@@ -54,9 +54,30 @@ enum AdminRole {
   SUPER_ADMIN
 }
 
+model Election {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  status      ElectionStatus @default(UPCOMING)
+  createdAt   DateTime @default(now())
+  
+  // relations
+  candidates  Candidate[]
+  votes       Vote[]
+}
+
+enum ElectionStatus {
+  UPCOMING
+  ACTIVE
+  ENDED
+}
+
 model Candidate {
   id        String            @id @default(cuid())
   userId    String            @unique
+  electionId String
   // party     String
   image     String?
   position  CandidatePosition
@@ -67,6 +88,7 @@ model Candidate {
   // relations
   votes     Vote[]
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  election  Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
 }
 
 enum CandidatePosition {
@@ -80,6 +102,7 @@ model Vote {
   id          String    @id @default(cuid())
   voterId     String
   candidateId String
+  electionId  String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -89,6 +112,7 @@ model Vote {
   // relations
   user       User     @relation(fields: [voterId], references: [id], onDelete: Cascade)
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
