@@ -16,12 +16,12 @@ export const getUserController = asyncHandler(async (req, res) => {
   }
   const { id } = req.user;
   const users = await getUser(id);
-  res.json({ success: true, data: users });
+  res.status(StatusCodes.OK).json({ success: true, data: users });
 });
 
 export const getAllUsersController = asyncHandler(async (req, res) => {
   const users = await getAllUsers();
-  res.json({ success: true, total: users.length, data: users });
+  res.status(StatusCodes.OK).json({ success: true, total: users.length, data: users });
 });
 
 export const updateUserController = asyncHandler(async (req, res) => {
@@ -65,5 +65,5 @@ export const updateUserController = asyncHandler(async (req, res) => {
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
   });
-  res.json({ success: true, data: updatedUser });
+  res.status(StatusCodes.OK).json({ success: true, data: updatedUser });
 });

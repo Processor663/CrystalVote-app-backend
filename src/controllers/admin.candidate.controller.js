@@ -16,7 +16,7 @@ import { logAudit } from "../services/audit.service.js";
 
 export const getCandidates = asyncHandler(async (req, res) => {
   const candidates = await getCandidatesByAdmin();
-  res.json({ success: true, total: candidates.length, data: candidates });
+  res.status(StatusCodes.OK).json({ success: true, total: candidates.length, data: candidates });
 });
 
 export const createCandidate = asyncHandler(async (req, res) => {
@@ -100,7 +100,7 @@ export const updateCandidate = asyncHandler(async (req, res) => {
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
   });
-  res.json({ success: true, data: updatedCandidate });
+  res.status(StatusCodes.OK).json({ success: true, data: updatedCandidate });
 });
 
 export const deleteCandidate = asyncHandler(async (req, res) => {
@@ -119,7 +119,7 @@ export const deleteCandidate = asyncHandler(async (req, res) => {
     userAgent: req.get("User-Agent") || null,
     requestId: req.id || null,
   });
-  res.json({
+  res.status(StatusCodes.OK).json({
     success: true,
     message: "Candidate deleted successfully",
     data: deletedCandidate,
