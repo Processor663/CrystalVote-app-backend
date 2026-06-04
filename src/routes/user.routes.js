@@ -8,7 +8,7 @@ import {
 import { requireAuth } from "../middlewares/requireAuth.js";
 import { authorize } from "../middlewares/authorize.js";
 
-// middleware to protect all routes and restrict to admin role
+// middle
 router.use(requireAuth);
 
 router.route("/").get(getAllUsersController);

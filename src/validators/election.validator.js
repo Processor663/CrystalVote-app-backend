@@ -8,10 +8,7 @@ const createElectionSchema = z
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
   })
-  .strict()
-  .refine((data) => data.startDate < data.endDate, {
-    message: "Start date must be before end date",
-  });
+  .strict();
 
 const updateElectionSchema = createElectionSchema
   .partial()
