@@ -19,6 +19,13 @@ import userRoutes from "./src/routes/user.route.js"; // User routes
 
 const app = express();
 
+// Set DNS servers for development environment to avoid potential DNS resolution issues
+import dns from "node:dns";
+if (process.env.NODE_ENV !== "production") {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+}
+
+
 const PORT = process.env.PORT || 3500; // Port configuration
 cron.schedule("0 0 * * *", cleanOldAuditLogs); // runs daily at midnight
 
