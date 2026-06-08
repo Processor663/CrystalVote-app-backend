@@ -16,14 +16,14 @@ import logger from "../lib/logger.js";
 import { logAudit } from "../services/audit.service.js";
 
 export const getElectionController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  if (!id || typeof id !== "string") {
+  const { electionId } = req.params;
+  if (!electionId || typeof electionId !== "string") {
     throw new AppError(
       "Election ID is required and must be a string",
       StatusCodes.BAD_REQUEST,
     );
   }
-  const election = await getElection(id);
+  const election = await getElection(electionId);
 
   res.status(StatusCodes.OK).json({ success: true, data: election });
 });
@@ -61,6 +61,7 @@ export const createElectionController = asyncHandler(async (req, res) => {
   }
 
   const election = await createElection(result.data);
+  logger.info(`Election created: ${election.id}`);
 
   await logAudit({
     userId: req.user?.id || null,
@@ -75,6 +76,7 @@ export const createElectionController = asyncHandler(async (req, res) => {
 });
 
 export const updateElectionController = asyncHandler(async (req, res) => {
+
   const result = updateElectionSchema.safeParse(req.body);
   if (!result.success) {
     const { fieldErrors, formErrors } = result.error.flatten();
@@ -99,7 +101,9 @@ export const updateElectionController = asyncHandler(async (req, res) => {
     throw new AppError(errorMessage, StatusCodes.BAD_REQUEST);
   }
 
-  const election = await updateElection(req.params.id, result.data);
+  const election = await updateElection(req.params.electionId, result.data);
+
+  logger.info(`Election updated: ${election.id}`);
 
   await logAudit({
     userId: req.user?.id || null,
@@ -114,7 +118,8 @@ export const updateElectionController = asyncHandler(async (req, res) => {
 });
 
 export const deleteElectionController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  await deleteElection(id);
+  const { electionId } = req.params;
+  await deleteElection(electionId);
+  logger.info(`Election deleted: ${electionId}`);
   res.status(StatusCodes.NO_CONTENT).json({ success: true });   
 });

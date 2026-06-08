@@ -16,6 +16,7 @@ import adminCandidateRoutes from "./src/routes/admin.candidate.routes.js"; // Ad
 import candidateRoutes from "./src/routes/candidate.routes.js"; // Candidate routes
 import userRoutes from "./src/routes/user.routes.js"; // User routes
 import electionRoutes from "./src/routes/election.routes.js"; // Election routes
+import voteRoutes from "./src/routes/vote.routes.js"; // Vote routes
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use("/api/v1/admin/candidates", adminCandidateRoutes);
 app.use("/api/v1/candidates", candidateRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/elections", electionRoutes);
+app.use("/api/v1/votes", voteRoutes);
 
 // routes to handler better-auth redirect default verification routes— add this before your 404 handler
 app.get("/", (req, res) => {
