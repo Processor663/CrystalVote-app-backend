@@ -77,7 +77,7 @@ enum ElectionStatus {
 model Candidate {
   id        String            @id @default(cuid())
   userId    String            @unique
-  electionId String?
+  electionId String
   // party     String
   image     String?
   position  CandidatePosition
@@ -88,7 +88,7 @@ model Candidate {
   // relations
   votes     Vote[]
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  election  Election? @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  election  Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
 }
 
 enum CandidatePosition {
