@@ -43,10 +43,22 @@ export const createCandidateByAdmin = async (electionId, data) => {
       data: { role: "CANDIDATE" },
     });
 
+    // Verify election exists before creating candidate
+    const election = await prisma.election.findUnique({
+      where: { id: electionId },
+    });
+
+    if (!election) {
+      throw new AppError(
+        "Election not found or invalid election ID.",
+        StatusCodes.NOT_FOUND,
+      );
+    }
+
     const candidate = await prisma.candidate.create({
       data: {
         userId: dbUser.id,
-        electionId,
+        electionId: election.id,
         position,
       },
     });

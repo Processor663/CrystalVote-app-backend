@@ -12,11 +12,9 @@ model User {
   id        String     @id @default(cuid())
   name      String
   email     String     @unique
-  // password  String?
   nin       String?     @unique 
   role      Role   @default(USER)
   // voterCardNumber String   @unique
-  hasVoted  Boolean    @default(false)
   emailVerified Boolean   @default(false)
   // image         String?
   createdAt DateTime   @default(now())
@@ -24,7 +22,6 @@ model User {
 
   // relations
   candidate Candidate?
-  admin     Admin?
   sessions      Session[]
   accounts      Account[]
   votes     Vote[]
@@ -34,22 +31,6 @@ model User {
 enum Role {
   USER
   CANDIDATE
-  ADMIN
-  SUPER_ADMIN
-}
-
-model Admin {
-  id        String    @id @default(cuid())
-  userId String @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
- // relations
-  user   User   @relation(fields: [userId], references: [id])
-  // user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-enum AdminRole {
   ADMIN
   SUPER_ADMIN
 }

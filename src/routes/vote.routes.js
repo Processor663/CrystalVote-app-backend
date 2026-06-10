@@ -15,7 +15,7 @@ router.route("/my-vote/:electionId").get( getMyVotesController);
 router.route("/cast/:electionId").post(castVoteController);
 router.route("/update/:electionId").patch( updateVoteController);
 
-
+export default router;
 
 
 
