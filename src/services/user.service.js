@@ -2,8 +2,6 @@ import { StatusCodes } from "http-status-codes";
 import prisma from "../lib/prismaClient.js";
 
 
-
-
 export const getUser = async (id) => {
   return await prisma.user.findUnique({
     where: { id, role: "USER" },
@@ -27,3 +25,5 @@ export const updateUser = async (id, data) => {
 
   return { ...updatedUser };
 };
+
+

@@ -123,3 +123,7 @@ export const deleteElectionController = asyncHandler(async (req, res) => {
   logger.info(`Election deleted: ${electionId}`);
   res.status(StatusCodes.NO_CONTENT).json({ success: true });   
 });
+
+export const getElectionResultsController = asyncHandler(async (req, res) => {
+
+})
