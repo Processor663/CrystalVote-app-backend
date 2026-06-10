@@ -20,6 +20,10 @@ export const getCandidates = asyncHandler(async (req, res) => {
 });
 
 export const createCandidate = asyncHandler(async (req, res) => {
+  const electionId = req.params.electionId;
+  if (!electionId) {
+    throw new AppError("Election ID is required", StatusCodes.BAD_REQUEST);
+  }
   const result = adminCreateCandidateSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -45,7 +49,7 @@ export const createCandidate = asyncHandler(async (req, res) => {
     throw new AppError(errorMessage, StatusCodes.BAD_REQUEST);
   }
 
-  const { candidate } = await createCandidateByAdmin(result.data);
+  const { candidate } = await createCandidateByAdmin(electionId, result.data);
 
   await logAudit({
     userId: req.user?.id || null,

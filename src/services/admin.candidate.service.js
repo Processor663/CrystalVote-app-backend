@@ -11,7 +11,7 @@ export const getCandidatesByAdmin = async () => {
   });
 };
 
-export const createCandidateByAdmin = async (data) => {
+export const createCandidateByAdmin = async (electionId, data) => {
   const { name, email, password, nin, position } = data;
 
   let user = null;
@@ -46,6 +46,7 @@ export const createCandidateByAdmin = async (data) => {
     const candidate = await prisma.candidate.create({
       data: {
         userId: dbUser.id,
+        electionId,
         position,
       },
     });

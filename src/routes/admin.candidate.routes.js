@@ -12,7 +12,8 @@ import { authorize } from "../middlewares/authorize.js";
 // middleware to protect all routes and restrict to admin role
 router.use(requireAuth, authorize(["SUPER_ADMIN", "ADMIN"]));
 
-router.route("/").get(getCandidates).post(createCandidate);
+router.route("/").get(getCandidates);
+router.route("/:electionId").post(createCandidate);
 router.route("/:id").patch(updateCandidate).delete(deleteCandidate);
 
 export default router;
