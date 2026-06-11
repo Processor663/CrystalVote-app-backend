@@ -50,7 +50,7 @@ export const createCandidateByAdmin = async (electionId, data) => {
 
     if (!election) {
       throw new AppError(
-        "Election not found or invalid election ID.",
+        "No ongoing election or invalid election ID.",
         StatusCodes.NOT_FOUND,
       );
     }

@@ -1,46 +1,52 @@
-// require("dotenv").config();
-// const mongoose = require("mongoose");
-// const User = require("../models/auth.model");
-// const { hashPassword } = require("../utils/password.util");
+import "dotenv/config";
+import prisma from "../lib/prismaClient.js";
+import logger from "../lib/logger.js";
+import AppError from "../utils/appError.js";
+import auth from "../lib/auth.js";
 
-// const MONGO_URI = process.env.MONGO_URI;
-// const dns = require("dns");
-// dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-// mongoose
-//   .connect(MONGO_URI)
-//   .then(() => console.log("DB connected"))
-//   .catch((err) => {
-//     console.error("DB connection error:", err);
-//     process.exit(1);
-//   });
 
-// const seedAdmin = async () => {
-//   try {
-//     const existingAdmin = await User.findOne({
-//       email: process.env.ADMIN_EMAIL,
-//     });
-//     if (existingAdmin) {
-//       console.log("Admin user already exists");
-//       process.exit();
-//     }
+const seedAdmin = async () => {
+  try {
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: process.env.ADMIN_EMAIL },
+    });
 
-//     const password = await hashPassword(process.env.ADMIN_PASSWORD); // default admin password
+    if (existingAdmin) {
+      logger.info("Admin already exists. Skipping seeding.");
+      return;
+    }
 
-//     const admin = await User.create({
-//       name: "super admin",
-//       email: process.env.ADMIN_EMAIL,
-//       password,
-//       role: "admin",
-//       isVerified: true,
-//     });
+    const { user: createdUser } = await auth.api.signUpEmail({
+      body: {
+        name: process.env.ADMIN_NAME,
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+        nin: `ADMIN-${Date.now()}`,
+      },
+    });
 
-//     console.log("Admin seeded:", admin);
-//     process.exit();
-//   } catch (error) {
-//     console.error("Error seeding admin:", error);
-//     process.exit(1);
-//   }
-// };
+    if (!createdUser?.id) {
+      throw new Error("User creation failed");
+    }
 
-// seedAdmin();
+    await prisma.user.update({
+      where: { id: createdUser.id },
+      data: {
+        role: "SUPER_ADMIN",
+        isVerified: true,
+      },
+    });
+
+    logger.info(`SUPER_ADMIN seeded successfully: ${process.env.ADMIN_EMAIL}`);
+
+    await prisma.$disconnect();
+    process.exit(0);
+  } catch (error) {
+    logger.error("Error seeding SUPER_ADMIN: " + error.message);
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+};
+
+seedAdmin();

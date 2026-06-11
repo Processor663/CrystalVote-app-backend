@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import {
   getElection,
   getAllElections,
+  getElectionResults,
   createElection,
   updateElection,
   deleteElection,
@@ -125,5 +126,13 @@ export const deleteElectionController = asyncHandler(async (req, res) => {
 });
 
 export const getElectionResultsController = asyncHandler(async (req, res) => {
-
+  const { electionId } = req.params;
+  if (!electionId || typeof electionId !== "string") {
+    throw new AppError(
+      "Election ID is required and must be a string",
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+  const results = await getElectionResults(electionId);
+  res.status(StatusCodes.OK).json({ success: true, data: results });                                          
 })
